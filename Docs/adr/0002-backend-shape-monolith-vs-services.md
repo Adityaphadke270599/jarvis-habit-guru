@@ -1,6 +1,6 @@
 # ADR-0002 — Ship the backend as a modular monolith with named seams, not microservices
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-07-02
 **Deciders:** Aditya Phadke
 **Consulted:** —

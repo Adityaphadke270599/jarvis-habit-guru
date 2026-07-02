@@ -1,6 +1,6 @@
 # ADR-0003 — Jarvis LLM provider and model policy
 
-**Status:** Stub — to be drafted post-demo
+**Status:** Accepted (as a deliberate deferral — see rationale below)
 **Date:** 2026-07-02
 **Deciders:** Aditya Phadke
 

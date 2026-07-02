@@ -40,9 +40,9 @@ The observable events that would legitimately reopen this ADR. Not "when we scal
 
 | # | Title | Status |
 |---|---|---|
-| 0001 | Mobile shell — PWA vs native | Proposed |
-| 0002 | Backend shape — monolith with named seams | Proposed |
-| 0003 | Jarvis LLM provider and model policy | Stub |
+| 0001 | Mobile shell — PWA vs native | Accepted |
+| 0002 | Backend shape — monolith with named seams | Accepted |
+| 0003 | Jarvis LLM provider and model policy | Accepted (deferred) |
 
 ## When to write one
 

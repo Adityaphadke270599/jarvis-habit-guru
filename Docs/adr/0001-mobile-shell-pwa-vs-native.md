@@ -1,6 +1,6 @@
 # ADR-0001 — Ship the mobile shell as a PWA, not a native app
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-07-02
 **Deciders:** Aditya Phadke
 **Consulted:** Kanchuki (post-demo)
