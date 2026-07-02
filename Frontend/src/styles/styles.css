@@ -1,0 +1,64 @@
+/* Jarvis DS — root stylesheet.
+ *
+ * This file is the @import closure the design agent's runtime loads.
+ * Anything not reachable from here will not style designs.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap");
+
+@import "../tokens/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    background: var(--ds-paper);
+    color: var(--ds-ink);
+    font-family: var(--ds-font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Mobile-first viewport — the demo is mobile-only (~390px). */
+  .ds-viewport {
+    max-width: 390px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    background: var(--ds-paper);
+  }
+}
+
+@layer components {
+  /* Jarvis voice — serif quote treatment.
+   * Used by JarvisMessage and MilestoneScreen. */
+  .ds-jarvis-quote {
+    font-family: var(--ds-font-serif);
+    font-weight: 500;
+    color: var(--ds-ink);
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+  }
+
+  /* Caps labels — small all-caps with tracked letter-spacing.
+   * Used by habit tile labels, section headers. */
+  .ds-caps {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    color: var(--ds-ink-soft);
+  }
+
+  /* Hairline divider — paper-edge tone. */
+  .ds-rule {
+    height: 1px;
+    background: var(--ds-paper-edge);
+    width: 100%;
+  }
+}

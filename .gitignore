@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log
+pnpm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build output (rebuild with `pnpm build` or `pnpm preview`)
+Frontend/dist/
+Frontend/upload/
+
+# Editor / IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Claude Code local scratch
+.claude/settings.local.json

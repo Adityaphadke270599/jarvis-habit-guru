@@ -1,0 +1,47 @@
+/* Jarvis Habit Guru — Design Tokens
+ *
+ * Palette anchor: paper + ink + brass.
+ * Muted, warm, Things-3 / quiet-study feel.
+ *
+ * Hard rules baked into these values:
+ *   - No red. Anywhere. Ever.
+ *   - "Kept" is sage (muted moss), never joyful green.
+ *   - "Missed" is dust (warm tan), never punitive amber.
+ *   - Brass is THE accent. One accent, used sparingly.
+ */
+
+:root {
+  /* ---------- Paper (backgrounds) ---------- */
+  --ds-paper:        #F4EDE3;   /* app background — warm cream */
+  --ds-paper-deep:   #ECE4D6;   /* cards, elevated surfaces */
+  --ds-paper-edge:   #DDD2BD;   /* hairlines, dividers, borders */
+
+  /* ---------- Ink (text) ---------- */
+  --ds-ink:          #2D2620;   /* primary text — deep warm-black */
+  --ds-ink-soft:     #6E614F;   /* secondary text */
+  --ds-ink-faint:    #A3957F;   /* tertiary / captions / placeholder */
+
+  /* ---------- Brass (the one accent) ---------- */
+  --ds-brass:        #A07C3E;   /* primary action, "today", milestone */
+  --ds-brass-deep:   #7E5F2A;   /* pressed / hover */
+  --ds-brass-tint:   #E8DCBE;   /* badge bgs, soft fills */
+
+  /* ---------- State tones (kept / missed) ---------- */
+  --ds-sage:         #7B8D6C;   /* habit kept — muted moss */
+  --ds-sage-tint:    #D8DECB;   /* kept-state fills, dot backgrounds */
+  --ds-dust:         #B79A6B;   /* habit missed — warm tan, never red */
+  --ds-dust-tint:    #E6D9BD;   /* missed-state fills, dot backgrounds */
+
+  /* ---------- Neutrals ---------- */
+  --ds-ring:         #E0D4C0;   /* empty calendar dot, ghost outline */
+
+  /* ---------- Type scale (rem) ---------- */
+  --ds-font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --ds-font-serif: "Cormorant Garamond", Georgia, serif;
+
+  /* ---------- Motion ---------- */
+  --ds-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ds-dur-quick: 140ms;
+  --ds-dur-base: 220ms;
+  --ds-dur-slow: 420ms;
+}

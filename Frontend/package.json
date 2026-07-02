@@ -1,0 +1,47 @@
+{
+  "name": "@jarvis/ds",
+  "version": "0.1.0",
+  "description": "Jarvis Habit Guru — design system. React component library for the 'Keep today's promise' demo.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles/styles.css -o ./dist/styles.css --minify",
+    "build:js": "node scripts/build.mjs",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build": "rm -rf dist && pnpm build:js && pnpm build:css && pnpm build:types && cp -R src/assets dist/ 2>/dev/null || true",
+    "preview": "node scripts/preview.mjs",
+    "dev": "node scripts/dev.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "esbuild": "^0.24.0",
+    "postcss": "^8.4.49",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.7.2"
+  }
+}

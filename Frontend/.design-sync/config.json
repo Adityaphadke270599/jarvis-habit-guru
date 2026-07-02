@@ -1,0 +1,7 @@
+{
+  "shape": "package",
+  "readmeHeader": ".design-sync/conventions.md",
+  "globalName": "JarvisDS",
+  "packageName": "@jarvis/ds",
+  "viewport": { "width": 390, "height": 844 }
+}
