@@ -2,7 +2,17 @@
 
 Per-component and per-service detail. Written **only** when there's an engineer about to build the thing.
 
-Empty by design. Populated from HLDs, which are populated from ADRs. Do not write an LLD before its parent HLD is stable — you'll spend the LLD chasing a moving target.
+Populated from HLDs, which are populated from ADRs. The current set is a batch of **target designs** — written before an engineer was staffed, at the PM's direction. They will want a re-read once contact with reality begins.
+
+## Current set
+
+| # | Doc | Owns |
+|---|---|---|
+| 1 | [app-structure.md](app-structure.md) | Frontend PWA — routing, state, offline, SSE, session |
+| 2 | [jarvis.md](jarvis.md) | Voice contract, prompt library, fallback lines, acceptance tests |
+| 3 | [orchestration.md](orchestration.md) | Event bus, dispatcher, cross-cutting runtime concerns |
+| 3a | [accountability-layer.md](accountability-layer.md) | Partner state, follow-ups, escalation, star ledger |
+| 3b | [jarvis-orchestration.md](jarvis-orchestration.md) | Prompt selection, LLM call runtime, validation, fallback |
 
 ## When an LLD becomes worth writing
 
