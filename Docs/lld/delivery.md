@@ -106,7 +106,7 @@ Alerts:
 
 ## Open questions
 
-- **Calendar location** — user's personal calendar or a shared "Jarvis" calendar? Shared is cleaner (single source of truth, easier to revoke) but requires an extra permission grant at onboarding.
+- **Calendar location** — user's personal calendar or a shared "Jarvis" calendar? Shared is cleaner (single source of truth, easier to revoke) but requires an extra permission grant at onboarding. Proposed answer: dedicated "Jarvis" calendar — see [ADR-0005](../adr/0005-calendar-event-governance.md), which also covers the ownership check needed before any mutating tool touches an event.
 - **Revocation UX** — what happens when the user revokes Calendar access mid-cycle? Currently the write silently fails. Should surface as a UI state ("Reconnect Calendar to receive nudges").
 - **Escalation email format** — plain HTML with brand tokens (paper / brass / ink) or one-line plain text? HTML is on-brand; plain text has marginally better deliverability. Test both once we have the sending domain warmed up.
 - **Digest cadence** — weekly by default. Does the weekly digest go via calendar or email? Probably email — a calendar event feels wrong for a summary.

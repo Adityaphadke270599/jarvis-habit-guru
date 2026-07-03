@@ -44,6 +44,7 @@ The observable events that would legitimately reopen this ADR. Not "when we scal
 | 0002 | Backend shape — monolith with named seams | Accepted |
 | 0003 | Jarvis LLM provider and model policy | Accepted (deferred) |
 | 0004 | Jarvis tool access — MCP for conversational surfaces, not batch voice lines | Proposed |
+| 0005 | Calendar event governance — ownership scoping and provenance flagging | Proposed |
 
 ## When to write one
 

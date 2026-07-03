@@ -68,6 +68,8 @@ A prototype was built at `Backend/mcp/` (`mcp-server.py`, `mcp-client.py`, `goog
 
 None of this changes the Decision above — it is a spike proving the mechanism, not a replacement for the module-wrapping design. Before this reaches either named conversational surface, the prototype's tools need to be re-pointed at internal module functions (or the Delivery adapter, for anything Calendar/Gmail-shaped), and its OAuth handling needs to move under Delivery's token storage. Tracked as follow-up work, not a scope change to this ADR.
 
+Testing the prototype also surfaced a governance gap this ADR didn't address: `update_calendar_event` / `delete_calendar_event` have no ownership check, so nothing stops them mutating an event Jarvis didn't create, and there's no way to tell a Jarvis-made event apart from a user-made one. Tracked separately in [ADR-0005](0005-calendar-event-governance.md) rather than folded in here, since it's a security/authorization boundary orthogonal to which surfaces get tool access.
+
 ## Revisit criteria
 
 - Onboarding or miss-reflection latency (tool-call round trips) proves unacceptable against a user-facing latency budget.
