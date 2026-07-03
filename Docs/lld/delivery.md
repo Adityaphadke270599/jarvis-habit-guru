@@ -7,6 +7,7 @@ The layer that turns "voice line composed" or "escalation triggered" into an act
 - [system-overview.md](../hld/system-overview.md) — see §5 (Google Calendar and Gmail as external actors), §6 (failure modes)
 - [orchestration.md](orchestration.md) — the events this layer consumes
 - [ADR-0002](../adr/0002-backend-shape-monolith-vs-services.md) — Delivery is one of the named module seams
+- [ADR-0004](../adr/0004-jarvis-mcp-tool-access.md) — Jarvis tool access; see its Implementation note for the `Backend/mcp/` prototype that currently bypasses this module
 
 ## Scope
 
@@ -109,3 +110,4 @@ Alerts:
 - **Revocation UX** — what happens when the user revokes Calendar access mid-cycle? Currently the write silently fails. Should surface as a UI state ("Reconnect Calendar to receive nudges").
 - **Escalation email format** — plain HTML with brand tokens (paper / brass / ink) or one-line plain text? HTML is on-brand; plain text has marginally better deliverability. Test both once we have the sending domain warmed up.
 - **Digest cadence** — weekly by default. Does the weekly digest go via calendar or email? Probably email — a calendar event feels wrong for a summary.
+- **MCP prototype reconciliation** — `Backend/mcp/` (see [ADR-0004](../adr/0004-jarvis-mcp-tool-access.md)) currently calls Google Calendar/Gmail directly from tool functions with its own OAuth flow, bypassing this module's `sendEmail` / `createCalendarEvent` / OAuth-storage responsibilities entirely. Before any MCP tool reaches a real conversational surface, its Calendar/Gmail calls need to move behind this module's provider adapter interface and its token needs to move to this module's storage.

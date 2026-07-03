@@ -29,7 +29,8 @@ jarvis-habit-guru/
 ├── Design/                       ← wireframes, mockups, Figma exports, voice/tone specs
 ├── Backend/
 │   ├── src/                      ← backend application code
-│   └── prompts/                  ← Jarvis Claude prompt library (nudge, miss, digest, milestone)
+│   ├── prompts/                  ← Jarvis Claude prompt library (nudge, miss, digest, milestone)
+│   └── mcp/                      ← MCP server/client prototype (Calendar + Gmail tool-calling; see ADR-0004)
 ├── Frontend/
 │   ├── src/                      ← shared/utility code
 │   ├── screens/                  ← full-page screens (home, onboarding, group view, etc.)

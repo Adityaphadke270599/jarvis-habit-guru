@@ -166,3 +166,4 @@ Two gates, both must pass before a prompt is deployable:
 - Should the prompt library be its own npm package so it can be versioned independently of the backend? Probably yes, at ~20 prompts; wasteful at 8.
 - Do we need multilingual fallbacks? The product is English-first for the first cohort; punt until we have a non-English user.
 - Should the voice contract itself be a template variable, or a hardcoded section per prompt? Currently a variable — trades expansion-time cost for edit-time simplicity. Keep unless the expansion becomes a bottleneck.
+- `composeMissReflection`, unlike the other seven prompts, is proposed to run against model-initiated tool calls rather than a static `PromptInput` — see [ADR-0004](../adr/0004-jarvis-mcp-tool-access.md). If accepted, its `inputs.schema.json` contract will look different from its seven siblings (a tool manifest, not a flat field list).
