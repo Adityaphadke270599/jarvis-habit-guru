@@ -13,6 +13,7 @@ Populated from HLDs, which are populated from ADRs. The current set is a batch o
 | 3 | [orchestration.md](orchestration.md) | Event bus, dispatcher, cross-cutting runtime concerns |
 | 3a | [accountability-layer.md](accountability-layer.md) | Partner state, follow-ups, escalation, star ledger |
 | 3b | [jarvis-orchestration.md](jarvis-orchestration.md) | Prompt selection, LLM call runtime, validation, fallback |
+| 4 | [delivery.md](delivery.md) | Google Calendar + Gmail integration, SPF/DKIM/DMARC posture, provider choice |
 
 ## When an LLD becomes worth writing
 
