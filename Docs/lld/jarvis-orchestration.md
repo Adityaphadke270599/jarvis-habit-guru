@@ -169,3 +169,4 @@ Log: every compose emits one JSON line with prompt name, model, duration, token 
 
 - Should we cache composed lines for identical inputs? Would save token cost but risks staleness (a user getting an identical morning nudge on two different days would notice). Leaning against caching for user-facing prompts, in favour of caching for the fallback templates.
 - Should validation include a semantic voice-check (a second LLM call scoring the first one)? Probably overkill until we see real voice drift in production.
+- The context-assembly model above (fully pre-fetched `PromptInput`, no model-initiated lookups) is deliberately kept for the six batch prompts. The two conversational surfaces (onboarding, miss-reflection) are proposed to work differently — see [ADR-0004](../adr/0004-jarvis-mcp-tool-access.md).

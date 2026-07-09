@@ -26,3 +26,12 @@ Frontend/upload/
 
 # Claude Code local scratch
 .claude/settings.local.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Google OAuth secrets (Backend/mcp)
+Backend/mcp/credentials.json
+Backend/mcp/token.json

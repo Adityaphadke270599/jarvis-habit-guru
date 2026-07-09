@@ -184,6 +184,7 @@ Things that stay open until we have real traffic or Kanchuki's feedback reshapes
 - **Partner follow-up format** — Gmail email is the default; do we also want an in-app inbox for partners, or is the email + Calendar event enough?
 - **Star display** — kept off the current PRD to preserve simplicity. Do stars ever surface to the circle, or are they a private mechanic the user sees only? Leaning toward private for the same reason miss reasons are private.
 - **Star currency** — do stars unlock anything, or are they purely symbolic? Deferring; if they unlock, we're building a game, not a habit companion.
+- **MCP direct-tool-call path** — a prototype (`Backend/mcp/`, see [ADR-0004](../adr/0004-jarvis-mcp-tool-access.md)) lets Jarvis call Calendar/Gmail tools directly and autonomously, bypassing the Delivery module boundary drawn in §5. Needs reconciling before it reaches a real user-facing surface — either the tools move behind Delivery's adapter interface, or Delivery's boundary is redrawn to explicitly allow a direct-call path from an MCP-exposed tool layer.
 
 ## What this HLD does not cover
 
