@@ -1,0 +1,83 @@
+# Web App Best Practices — Review Lens
+
+Curated from named practitioners; each principle links back to a specific source. Structured so a tech-lead reviewer can walk down the list and flag deviations in code.
+
+## 0. Framing
+
+We are reviewing a **scaffold** — the earliest committed floor plan of `Frontend/src/app/`, not the shipping habit-tracker. The bar is not "does it work today" (it does; there are two routes and a mock backend). The bar is **"will this shape scale when we add optimistic check-ins, offline caching, group state, and a push-notification service worker?"** Each section below is written so a reviewer can point at a file and say either "matches the principle" or "here's the specific drift, and here's the named source we are drifting from." Where two respected voices disagree (server-state ownership; hash vs history routing), both sides are named.
+
+---
+
+## 1. State management shape
+
+- **Principle** — Server state and UI state are different beasts (different lifecycle, cache semantics, freshness rules) and should be managed by different systems: React Query (or SWR) for server state, Zustand/Context for the small residual UI state.
+- **Source** — Tanner Linsley on *Chats with Kent* podcast: [Tanner Linsley Separates UI State And Server State](https://kentcdodds.com/chats/03/12/tanner-linsley-separates-ui-state-and-server-state); and the TanStack Query docs [Does TanStack Query replace Redux, MobX or other global state managers?](https://tanstack.com/query/latest/docs/framework/react/guides/does-this-replace-client-state). Kent C. Dodds agrees on X: ["react-query manages server cache/state super well"](https://x.com/kentcdodds/status/1251654913366519809).
+- **How it applies here** — `state/session.ts`, `state/habit.ts`, `state/circle.ts` all currently own a `loadFromServer` action, meaning the Zustand store is doubling as a network cache. That works for a prototype and is defensible while the API surface is small and single-user, but it means we hand-roll everything React Query gives for free: staleness, retries, dedupe, background refetch, invalidation-on-mutation, mount-time caching, focus refetch. As soon as two screens need the same fetch (Today + a future Group screen both need the circle roster), we will reinvent it badly. **Controversy noted:** some teams (Zustand author Daishi Kato among them) argue a single well-shaped store is simpler than mixing two systems; that view is legitimate for very small apps, but Tanner's framing wins as soon as you have >2 remote resources with distinct freshness rules.
+- **Red flag** — Any store slice that holds both server-derived data *and* a `loadFromServer` method. If we keep Zustand for server state, we must at minimum document a single canonical read path so we don't grow ad-hoc cache reads.
+
+## 2. useEffect for data loading
+
+- **Principle** — `useEffect` is the wrong tool for initial data loading. The official React docs list this explicitly as a use case Effects should not own; use a framework/router loader or a data-fetching library instead.
+- **Source** — React team: [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) (react.dev); TkDodo (React Query maintainer) reinforces the same conclusion in [Simplifying useEffect](https://tkdodo.eu/blog/simplifying-use-effect).
+- **How it applies here** — Neither `Splash.tsx` nor `Today.tsx` is committed yet with fetch-on-mount, but the shape of the stores implies the intended pattern is `useEffect(() => store.loadFromServer(), [])` inside each route. Do that and we inherit the whole catalogue of problems the React docs enumerate: no request deduplication when two components mount at once, race conditions when the user navigates before the response returns, no cleanup on unmount, and double-fire under StrictMode in dev. Josh Comeau's [Joy of React Fetch Race Condition lesson](https://courses.joshwcomeau.com/joy-of-react/03-hooks/07-data-fetching) walks through the exact same pitfalls and recommends AbortController as the minimum viable defence.
+- **Red flag** — Any `useEffect(() => { fetch…; setState… }, [])` in a route file. The modern alternatives (in rough order of ceremony): route-level loader (§3), React Query `useQuery`, or a custom hook that at minimum wires an AbortController and handles unmount.
+
+## 3. Route boundaries
+
+- **Principle** — Route boundaries are the natural home for auth gating, data loading, and error containment. Load data as the URL changes, in parallel across nested route segments; do not wait for each child to mount and re-fetch its own slice.
+- **Source** — Ryan Florence: [Remixing React Router](https://remix.run/blog/remixing-react-router) — "By initiating your fetches at nested route boundaries the request waterfall chain is flattened and 3x faster." Kent C. Dodds on error boundary placement: [Why React Error Boundaries Aren't Just Try/Catch for Components](https://www.epicreact.dev/why-react-error-boundaries-arent-just-try-catch-for-components-i6e2l), plus his maintained [`react-error-boundary`](https://github.com/bvaughn/react-error-boundary) package.
+- **How it applies here** — Our `lib/router.ts` is a raw `useSyncExternalStore` hash router (see §4) — it has no loader concept, no error boundary slot, no auth-gate hook. That's fine for two routes; the risk is that every future route will re-invent its own guard + fetch dance. Minimum bar for the scaffold: (a) a single `<AuthGate>` that reads `session` and redirects to `Splash`, wrapped once around the router switch; (b) one top-level `ErrorBoundary` from `react-error-boundary` with a Jarvis-voiced fallback ("A momentary indisposition, sir. Kindly try again."); (c) a per-route boundary once we have >3 routes so one bad Today card does not blank the whole app.
+- **Red flag** — Auth checks or fetch calls repeated inside each route component. If `Today.tsx` and a future `Group.tsx` both check `session.userId` before rendering, that check belongs one level up.
+
+## 4. Custom hash router
+
+- **Principle** — Roll-your-own routers are cheap to write, expensive to grow. Hash routing specifically buys installability-friendliness and dodges the SPA-fallback problem, at the cost of SEO, some deep-link ergonomics, and every affordance a mature router gives (loaders, transitions, nested layouts, scroll restoration).
+- **Source** — [Comparing HashRouter and BrowserRouter](https://wanago.io/2021/04/19/hashrouter-browserrouter-react/) (wanago.io) — SEO caveats; [SPA URL Structure and SEO Best Practices](https://www.stackmatix.com/blog/spa-url-structure-seo-best-practices); Ryan Florence's [React Router history thread](https://x.com/ryanflorence/status/1895546111961809316) for context on why data-router APIs are worth the migration cost.
+- **How it applies here** — Hash routing is a defensible choice for a mobile-first installable PWA — Google indexing is a non-goal, and hash fragments never require server-side fallback config, which simplifies static hosting. Two things to watch in `lib/router.ts`: (1) does `useSyncExternalStore`'s snapshot return a **stable reference** when the URL is unchanged? A fresh object each call will break memoisation across the tree. (2) `hashchange` fires on back/forward but scroll position is not restored automatically — mobile users will notice. **Controversy noted:** if we ever want deep links from Gmail nudges to open specific screens, hash routes handle that fine; if we want them to also be indexable landing pages, we will regret hash routing.
+- **Red flag** — Anywhere we call `window.location.hash = ...` directly instead of through the router; any component subscribing to `hashchange` outside the router.
+
+## 5. TypeScript hygiene
+
+- **Principle** — Discriminated unions with a literal tag are the idiomatic way to model API responses, mutation states, and any component that has mutually-exclusive prop combinations. Use `never` in the default branch of a switch to force exhaustiveness at compile time.
+- **Source** — Matt Pocock's [Total TypeScript articles](https://www.totaltypescript.com/articles); FullStory: [Discriminated Unions and Exhaustiveness Checking in TypeScript](https://www.fullstory.com/blog/discriminated-unions-and-exhaustiveness-checking-in-typescript/); Basarat: [Discriminated Unions](https://basarat.gitbook.io/typescript/type-system/discriminated-unions).
+- **How it applies here** — `api/mock.ts` already throws `AuthError` and `ClientError` — good, but a thrown error is invisible to the type system at the call site. Consider modelling API results as `type Result<T> = { kind: 'ok'; data: T } | { kind: 'auth' } | { kind: 'client'; message: string }` and narrowing at the boundary. That gives us an exhaustive `switch (res.kind)` in the store and a `const _: never = res` in the default branch that will fail CI the day someone adds a `'network'` variant without updating call sites. For React components, prefer discriminated prop unions (e.g. `HabitCard` in "ready" vs "ticked" vs "missed" state) over a bag of optional booleans.
+- **Red flag** — `any`, unchecked `as` casts at the API boundary, or a switch on a union without a `never` default.
+
+## 6. Optimistic updates
+
+- **Principle** — Optimistic updates are worth doing but the failure and race paths are where they earn their keep. Snapshot previous state before mutating, rollback via a context passed to the error handler, and cancel in-flight queries so a stale refetch doesn't clobber a fresh mutation.
+- **Source** — TkDodo: [Concurrent Optimistic Updates in React Query](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query); TanStack Query docs: [Optimistic Updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates).
+- **How it applies here** — Our habit-tick is the killer optimistic action (one tap must feel instant; the Jarvis brief pins one-tap as the friction ceiling). Our current pattern — mutate the store, call the API, revert on failure — is the right instinct but has two gaps that TkDodo names: (1) if two ticks race (user taps Today, backgrounds, reopens, taps Yesterday), the second's rollback can revert the first's success; (2) if a background refetch resolves between mutate-and-response, it will overwrite the optimistic value. Minimum defence: snapshot before mutate, pass the snapshot into the rollback path, and either use `AbortController` or cancel any in-flight `loadFromServer` before mutating.
+- **Red flag** — A mutation that reads current state, sets new state, then reverts on failure by *recomputing* the old state — that's how you lose data on interleaved failures.
+
+## 7. Testing strategy
+
+- **Principle** — For a webapp scaffold, integration tests that exercise real user flows via `@testing-library/react` give the highest confidence per line of test code. Static tests (TypeScript, ESLint) are the free base of the trophy; unit tests are for genuinely tricky pure functions; E2E is for a few golden paths.
+- **Source** — Kent C. Dodds: [The Testing Trophy and Testing Classifications](https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications) and [Write tests. Not too many. Mostly integration.](https://kentcdodds.com/blog/write-tests); [Static vs Unit vs Integration vs E2E Testing](https://kentcdodds.com/blog/static-vs-unit-vs-integration-vs-e2e-tests).
+- **How it applies here** — At the scaffold stage, spending a week on a Storybook + Jest setup is premature; spending an hour on one integration test that mounts `<App>` with the mock backend and asserts "user taps the habit → circle shows a tick" pays out immediately and catches every future regression to the loop that matters. Add tests only for: (a) the tick loop, (b) the auth gate, (c) any pure function in `lib/` (e.g. streak-with-misses arithmetic). Skip snapshot tests entirely — Kent has argued against them for years and the maintenance cost dwarfs the value on a two-route scaffold.
+- **Red flag** — Any test that mocks a Zustand store, mocks a component, or asserts on an implementation detail. If the test would still pass after a legitimate refactor, it's testing the wrong thing.
+
+## 8. Accessibility fundamentals
+
+- **Principle** — For a mobile-first installable PWA, the five things that must not slip: (i) 48x48dp touch targets with 8dp gaps; (ii) 4.5:1 text contrast (3:1 for large); (iii) visible focus states; (iv) semantic HTML (real `<button>`s, not `<div onClick>`); (v) `prefers-reduced-motion` respected on any animation.
+- **Source** — web.dev: [Accessible tap targets](https://web.dev/articles/accessible-tap-targets); web.dev: [PWA Foundations](https://web.dev/learn/pwa/foundations); MDN: [Mobile accessibility checklist](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Mobile_accessibility_checklist).
+- **How it applies here** — The 390px viewport plus one-tap check-in makes touch-target size existentially important — a mis-tap on the daily tick is a shame event we've promised never to inflict. The design-system components live under `src/components/` and are out of scope for this review, but the scaffold owes it to the design system to preserve semantics: use `<button>` in routes, `<a href="#/...">` for the router links (so long-press-to-copy works, and screen readers announce them as links), and never trap focus inside a modal without a documented escape.
+- **Red flag** — `role="button"` on a div; interactive elements without an `aria-label` when the visible label is an icon; motion that ignores `prefers-reduced-motion`.
+
+## 9. PWA specifics
+
+- **Principle** — Installability is a manifest problem (name, icons, `display: standalone`, `start_url`, theme colour). Offline-first is a service-worker problem best solved with Workbox, choosing per-route caching strategies (app-shell = cache-first; API = network-first with fallback; assets = stale-while-revalidate).
+- **Source** — web.dev: [PWA Foundations](https://web.dev/learn/pwa/foundations) and [Capabilities](https://web.dev/learn/pwa/capabilities); [Workbox docs](https://developer.chrome.com/docs/workbox) (Addy Osmani's team); [Offline-First PWAs: Service Worker Caching Strategies](https://www.magicbell.com/blog/offline-first-pwas-service-worker-caching-strategies).
+- **How it applies here** — Neither manifest nor service worker is in the scaffold yet, which is fine — do not hand-write a service worker. When we add one, reach for `vite-plugin-pwa` (Workbox under the hood) so we get precache + runtime caching without owning the low-level Cache API. For the habit tick specifically: a background-sync queue for outbound ticks is the pattern to reach for so a tap in the tube-tunnel-lift-off-the-Central-line still lands when connectivity returns — that is the exact use case Workbox's `BackgroundSyncPlugin` was written for.
+- **Red flag** — A hand-rolled `install` event listener that does not version its cache names; a service worker that intercepts API calls but has no strategy for auth token refresh.
+
+## 10. Component composition
+
+- **Principle** — Before reaching for context or memoisation, first move state *down* to the smallest component that needs it, and lift *content* up as `children` so parents don't re-render every keystroke of an unrelated input. Context is for genuinely tree-wide values (theme, session), not for avoiding two levels of prop drilling.
+- **Source** — Dan Abramov: [Before You memo()](https://overreacted.io/before-you-memo/); Kent C. Dodds: [State Colocation will make your React app faster](https://kentcdodds.com/blog/state-colocation-will-make-your-react-app-faster) and [Application State Management with React](https://kentcdodds.com/blog/application-state-management-with-react).
+- **How it applies here** — The design system lives at `src/components/`; the routes at `src/app/routes/`. The boundary the reviewer should watch: routes should compose design-system primitives and pass **data**, not behaviour bundles. When a route needs a callback, prefer a prop over a context read, so the design-system component stays route-agnostic. For the store consumers: use Zustand's selector form (`useHabitStore(s => s.today)`) rather than pulling the whole store, or every tick will re-render every subscriber.
+- **Red flag** — A design-system component that imports from `app/state`; a route that reads the entire store into a local variable; context providers that wrap the whole app for values only two components read.
+
+---
+
+*Curated for the Jarvis Habit Guru scaffold review, 2026-07. Sources cited inline; where two respected voices disagree, both are named. If a principle here starts to feel wrong six months from now, the source URL is the place to argue with, not this doc.*
