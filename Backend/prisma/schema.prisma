@@ -1,0 +1,73 @@
+// Prisma schema — SQLite for dev, Postgres in prod (change provider + connection string only).
+// Names align with delivery.md and accountability-layer.md; expanded as those modules land.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── auth module ─────────────────────────────────────────────
+// Owned by src/auth; consumed by every other module.
+
+model User {
+  id          String        @id @default(cuid())
+  googleSub   String        @unique                       // sub from Google's id_token
+  email       String        @unique
+  name        String
+  honorific   String        @default("sir")
+  register    String        @default("neutral")           // gentle | neutral | direct
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  oauthTokens OAuthToken[]
+  calendars   JarvisCalendar[]
+}
+
+// One row per (user, provider) pair — currently only Google. Encrypted at rest.
+// Per ADR-0006, scopes are the union of everything the user has granted; grown
+// incrementally via /auth/google/grant.
+model OAuthToken {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       String                                          // "google"
+  accessToken    String                                          // ENCRYPTED (see delivery.md)
+  refreshToken  String?                                          // ENCRYPTED
+  expiresAt      DateTime
+  scopes         String                                          // space-separated, matches OAuth 2.0 format
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, provider])
+}
+
+// ─── delivery module ─────────────────────────────────────────
+// The per-user Jarvis calendar per ADR-0005. One row per user; calendarId is
+// Google's opaque ID for the calendar Jarvis created and owns.
+
+model JarvisCalendar {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarId  String                                              // Google's calendar ID
+  createdAt   DateTime @default(now())
+}
+
+// ─── habit-loop module (minimal — expanded when the module lands) ─
+// Enough to prove the full-loop wiring in later phases.
+
+model Habit {
+  id         String   @id @default(cuid())
+  userId     String
+  title      String
+  tinyUnit   String
+  taskDays   String                                                // JSON array of DayKey strings
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
