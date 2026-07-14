@@ -11,6 +11,12 @@ yarn-error.log
 # Build output (rebuild with `pnpm build` or `pnpm preview`)
 Frontend/dist/
 Frontend/upload/
+Backend/dist/
+
+# SQLite dev database (recreated by `pnpm db:migrate`)
+Backend/prisma/dev.db
+Backend/prisma/dev.db-journal
+*.db-journal
 
 # Editor / IDE
 .vscode/*
